@@ -1,0 +1,41 @@
+// Copyright 2020 HDL
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+#pragma once
+
+#include <string>
+#include <vector>
+
+#include "common/io/input/input_block_info.h"
+
+namespace axe {
+namespace common {
+
+class NFSInputBlockInfo : public AbstractInputBlockInfo {
+ public:
+  explicit NFSInputBlockInfo(const std::string& url, size_t block_size = 128 * 1024 * 1024) : AbstractInputBlockInfo(url), block_size_(block_size) {}
+  virtual ~NFSInputBlockInfo() {}
+
+  void FetchBlocksInfo() override;
+  double GetBlockSize(const std::string& file, size_t offset) const override { return block_size_; }
+
+ private:
+  void SplitFile(const std::string& path);
+
+  int num_blocks_ = 0;
+  const size_t block_size_;
+};
+
+}  // namespace common
+}  // namespace axe
