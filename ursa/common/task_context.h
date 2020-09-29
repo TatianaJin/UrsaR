@@ -72,7 +72,6 @@ class TaskContext {
 
   /** Get immutable dataset partitions from data store.
    *
-   * TODO(tatiana): deprecate
    * @tparam Val    dataset partitions value type
    * @param data_id the id of the dataset partitions
    * @return all dataset partitions of the data_id
@@ -81,16 +80,6 @@ class TaskContext {
   const auto GetDataset(DataIdType data_id) {
     CHECK(data_store_ != nullptr) << "[TaskContext] data_store_ not set";
     return data_store_->GetDataset<Val>(data_id);
-  }
-
-  /** Get immutable dataset partitions from data store.
-   *
-   * @param data_id the id of the dataset partitions
-   * @return all dataset partitions of the data_id
-   */
-  const auto GetDataset(DataIdType data_id) {
-    CHECK(data_store_ != nullptr) << "[TaskContext] data_store_ not set";
-    return data_store_->GetDataset(data_id);
   }
 
   /** Get mutable dataset partition from data store.

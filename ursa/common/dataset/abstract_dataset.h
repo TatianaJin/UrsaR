@@ -52,11 +52,6 @@ class AbstractDataset {
     return msg;
   }
 
-  explicit AbstractDataset(TaskGraph* tg) : task_graph_(tg), id_(tg->CreateDataset()) {}
-  AbstractDataset(const std::shared_ptr<Task>& producer, TaskGraph* task_graph) : task_graph_(task_graph), id_(task_graph->CreateDataset()) {
-    SetProducer(producer);
-  }
-
   inline DataIdType GetId() const { return id_; }
   inline int GetParallelism() const { return parallelism_; }
   inline void SetParallelism(int parallelism) { parallelism_ = parallelism; }
@@ -110,6 +105,11 @@ class AbstractDataset {
   inline const std::shared_ptr<Task>& GetWriteDependence() { return write_precedence_; }
 
  protected:
+  explicit AbstractDataset(TaskGraph* tg) : task_graph_(tg), id_(tg->CreateDataset()) {}
+  AbstractDataset(const std::shared_ptr<Task>& producer, TaskGraph* task_graph) : task_graph_(task_graph), id_(task_graph->CreateDataset()) {
+    SetProducer(producer);
+  }
+
   inline void SetWriteDependence(const std::shared_ptr<Task>& task) { write_precedence_ = task; }
 
   void SanityCheck() const { CHECK(producer_is_set_) << "The producer of the dataset is not set yet"; }

@@ -68,13 +68,6 @@ class DataStore {
     return map;
   }
 
-  const auto GetDataset(DataIdType data_id) {
-    std::lock_guard<std::mutex> lock(mu_);
-    CHECK(store_.count(data_id) > 0) << "[DataStore] Cannot get data " << data_id;
-    auto map = store_.at(data_id);
-    return map;
-  }
-
   /** Get mutable dataset partition from data store.
    *
    * TODO(tatiana): Supports only element update now, cannot insert or delete

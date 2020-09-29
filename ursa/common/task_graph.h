@@ -33,7 +33,7 @@ using metadata::Metadata;
 class TaskGraph {
  public:
   TaskGraph() {}
-  std::shared_ptr<Task> CreateTask(const std::string& name, ResourceType type = CPU);
+  std::shared_ptr<Task> CreateTask(const std::string& name, ResourceType type);
   inline DataIdType CreateDataset() { return dataset_counter_++; }
   inline void RegisterClosure(TaskIdType task_id, const Closure& closure) { closure_map_.insert({task_id, closure}); }
   void AddMetaData(DataIdType data_id, const Metadata& metadata) { data_.insert({data_id, metadata}); }

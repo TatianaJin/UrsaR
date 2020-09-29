@@ -41,14 +41,6 @@ class StrtokTokenizer : public Tokenizer {
   explicit StrtokTokenizer(const std::string& str, const std::string delimiter = WHITESPACE_DELIMITER);
 
   /**
-   * Thread-safe tokenizer using strtok_r.
-   *
-   * @param str the string to tokenize.
-   * @param delimiter the delimiter to split the string. Default is WHITESPACE_DELIMITER.
-   */
-  explicit StrtokTokenizer(char* str, const std::string delimiter = WHITESPACE_DELIMITER);
-
-  /**
    * Get the next token.
    *
    * @returns the pointer to the next token or nullptr.

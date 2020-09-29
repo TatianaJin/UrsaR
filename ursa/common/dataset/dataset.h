@@ -14,13 +14,10 @@
 
 #pragma once
 
-#include <sys/stat.h>
 #include <algorithm>
-#include <fstream>
 #include <functional>
 #include <memory>
 #include <string>
-#include <type_traits>
 #include <vector>
 
 #include "glog/logging.h"
@@ -55,55 +52,6 @@ class Dataset : public AbstractDataset {
     ReadBy(task);
   }
 
-  Dataset<Val>& SaveTo(const std::string& path) {
-    SanityCheck();
-    // TODO(tatiana): now only write to nfs, support writing to hdfs
-    auto task = CreateTask("Save", Disk);
-    RegisterClosure(task->GetId(), [ path, id = this->id_ ](TaskContext * tc) {
-      auto& partition = tc->GetDatasetPartition<Val>(id);
-
-      auto status = mkdir(path.data(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
-      if (status != 0 && errno != EEXIST) {
-        LOG(WARNING) << "Cannot mkdir " << path.substr(5) << ": " << std::strerror(errno);
-      }
-      std::ofstream ofs;
-      auto file_path = path + "/_" + std::to_string(tc->GetShardId());
-      ofs.open(file_path.c_str());
-      CHECK(ofs.is_open()) << "Failed to open " << file_path << " for writing. " << std::strerror(errno);
-      for (auto& record : *partition) {
-        ofs << record << "\n";
-      }
-      ofs.close();
-    });
-    ReadBy(task);
-    return *this;
-  }
-
-  template <typename Serializer>
-  Dataset<Val>& SaveTo(const std::string& path, Serializer serializer) {
-    SanityCheck();
-    // TODO(tatiana): now only write to nfs, support writing to hdfs
-    auto task = CreateTask("Save", Disk);
-    RegisterClosure(task->GetId(), [ serializer, path, id = this->id_ ](TaskContext * tc) {
-      auto& partition = tc->GetDatasetPartition<Val>(id);
-
-      auto status = mkdir(path.data(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
-      if (status != 0 && errno != EEXIST) {
-        LOG(WARNING) << "Cannot mkdir " << path.substr(5) << ": " << std::strerror(errno);
-      }
-      std::ofstream ofs;
-      auto file_path = path + "/_" + std::to_string(tc->GetShardId());
-      ofs.open(file_path.c_str());
-      CHECK(ofs.is_open()) << "Failed to open " << file_path << " for writing. " << std::strerror(errno);
-      for (auto& record : *partition) {
-        serializer(ofs, record);
-      }
-      ofs.close();
-    });
-    ReadBy(task);
-    return *this;
-  }
-
   template <typename Lambda>
   auto MapPartition(Lambda lambda) {
     SanityCheck();
@@ -113,19 +61,6 @@ class Dataset : public AbstractDataset {
     RegisterClosure(task->GetId(), [ lambda, ret = ret.GetId(), id = this->id_ ](TaskContext * tc) {
       auto res_data = std::make_shared<DatasetPartition<ret_type>>(lambda(*(tc->GetDatasetPartition<Val>(id))));
       tc->InsertDatasetPartition(ret, res_data);
-    });
-    ReadBy(task);
-    return ret;
-  }
-
-  template <typename Lambda>
-  auto MapPartition2(Lambda lambda) {
-    SanityCheck();
-    auto task = CreateTask("MapPartition2");
-    auto ret = AbstractDataset(task, task_graph_);
-    RegisterClosure(task->GetId(), [ lambda, ret = ret.GetId(), id = this->id_ ](TaskContext * tc) {
-      auto res_data = std::make_shared<typename decltype(lambda(DatasetPartition<Val>()))::type>(lambda(*(tc->GetDatasetPartition<Val>(id))));
-      tc->InsertData(ret, res_data);
     });
     ReadBy(task);
     return ret;
